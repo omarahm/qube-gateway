@@ -10,13 +10,12 @@ var uuid = require('node-uuid');
 
 var responseObjects = {};
 
-
 http.createServer(function (req, res) {
 	var t1 = Date.now();
 	var topicName   = req.method+':'+req.headers.host+':'+req.url;
 	var requestUUID = uuid.v1();
 
-	nrp.emit('request|'+topicName, {
+	client.rpush('request|'+topicName, {
 		requestUUID: requestUUID,
 		data: 'Test!',
 		method: req.method,
@@ -25,6 +24,8 @@ http.createServer(function (req, res) {
 		timing: {
 			t1: t1
 		}
+	}, function(err, reply){
+		nrp.emit('request|'+topicName);	//Notify workers to fetch the new task/request from list
 	});
 
 	responseObjects[requestUUID] = res;
